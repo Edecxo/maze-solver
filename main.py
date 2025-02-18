@@ -1,16 +1,10 @@
-from drawers import *
+from maze import *
 
 def main():
-    win = Window(800, 600) 
-    '''
-    cell1 = Cell(Point(20,20), Point(40, 40))
-    cell2 = Cell(Point(50, 20), Point(70, 40))
-    win.draw_cell(cell1, "black")
-    win.draw_cell(cell2, "black")
-    cell1.cell_move(win.canvas, cell2)
-    win.wait_for_close()
-    '''
-    maze = Maze(0, 0, 10, 10, 20, 20, win)
-    maze._draw_cell(200, 200)
+    win = Window(400,400)
+    maze = Maze(0, 0, 12, 10, 25, 25, win)
+    maze._draw_cell()
+    maze._break_walls_r(0, 0)
+    maze.win.wait_for_close()
 
 main()
