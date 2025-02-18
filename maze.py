@@ -193,8 +193,8 @@ class Maze():
             for cell in row:
                 self.win.draw_cell(cell, "black")
                 self.win.redraw()
-                time.sleep(0.01)
-        self._break_entrance_and_exit()
+                #time.sleep(0.01)
+        #self._break_entrance_and_exit()
 
     def _break_entrance_and_exit(self):
         first_cell = self._cells[0][0]
@@ -206,7 +206,7 @@ class Maze():
         last_cell.draw(self.win.canvas)
 
     def _break_walls_r(self, i, j):
-        self._break_entrance_and_exit()
+        #self._break_entrance_and_exit()
         current_cell = self._cells[i][j]
         current_cell.visited = True
         left_cell = None
@@ -226,16 +226,12 @@ class Maze():
             to_visit = []
             if top_cell and not top_cell.visited:
                 to_visit.append((top_cell, i-1, j, "top"))
-                print(f"Can go left from ({i}, {j}) to ({i-1}, {j})")
             if bottom_cell and not bottom_cell.visited:
                 to_visit.append((bottom_cell, i+1, j, "bottom"))
-                print(f"Can go right from ({i}, {j}) to ({i+1}, {j})")
             if left_cell and not left_cell.visited:
                 to_visit.append((left_cell, i, j-1, "left"))
-                print(f"Can go up from ({i}, {j}) to ({i}, {j-1})")
             if right_cell and not right_cell.visited:
                 to_visit.append((right_cell, i, j+1, "right"))
-                print(f"Can go bottom from ({i}, {j}) to ({i}, {j+1})")
 
             if len(to_visit) == 0:
                 return
@@ -245,29 +241,64 @@ class Maze():
             next_i = choice[1]
             next_j = choice[2]
             direction = choice[3]
-            print(f"Chose direction: {direction} from ({i}, {j}) to ({next_i}, {next_j})")
 
             if direction == "left":
-                print(f"Breaking left wall from ({i}, {j}) to ({next_i}, {next_j})")
                 current_cell.has_left_wall = False
                 next_cell.has_right_wall = False
             elif direction == "right":
-                print(f"Breaking right wall at ({i}, {j}) to ({next_i}, {next_j})")
                 current_cell.has_right_wall = False
                 next_cell.has_left_wall = False
             elif direction == "top":
-                print(f"Breaking top wall at ({i}, {j}) to ({next_i}, {next_j})")
                 current_cell.has_top_wall = False
                 next_cell.has_bottom_wall = False
             elif direction == "bottom":
-                print(f"Breaking bottom wall at ({i}, {j}) to ({next_i}, {next_j})")
                 current_cell.has_bottom_wall = False
                 next_cell.has_top_wall = False
-            print(current_cell.cell_walls())
-            print(next_cell.cell_walls())
 
             current_cell.draw(self.win.canvas)
             next_cell.draw(self.win.canvas)
-            time.sleep(0.05)
+            time.sleep(0.01)
             self.win.redraw()
             self._break_walls_r(next_i, next_j)
+
+    def _reset_cells_visited(self):
+        for row in self._cells:
+            for cell in row:
+                cell.visited = False
+    
+    def _solve_r(self, i=0, j=0):
+        self._animate()
+
+        current_cell = self._cells[i][j]
+        current_cell.visited = True
+
+        if current_cell == self._cells[-1][-1]:
+            return True
+
+        to_visit = []
+        if not current_cell.has_bottom_wall:
+            bottom_cell = self._cells[i+1][j]
+            if not bottom_cell.visited:
+                to_visit.append((bottom_cell, i+1, j))
+        if not current_cell.has_right_wall:
+            right_cell = self._cells[i][j+1]
+            if not right_cell.visited:
+                to_visit.append((right_cell, i, j+1))
+        if not current_cell.has_left_wall:
+            left_cell = self._cells[i][j-1]
+            if not left_cell.visited:
+                to_visit.append((left_cell, i, j-1))
+        if not current_cell.has_top_wall:
+            top_cell = self._cells[i-1][j]
+            if not top_cell.visited:
+                to_visit.append((top_cell, i-1, j))
+
+        for next_stop in to_visit:
+            next_cell = next_stop[0]
+            next_i = next_stop[1]
+            next_j = next_stop[2]
+            current_cell.cell_move(self.win.canvas, next_cell)
+            if not self._solve_r(next_i, next_j):
+                current_cell.cell_move(self.win.canvas, next_cell, True)
+            else:
+                return True
